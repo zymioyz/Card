@@ -51,7 +51,7 @@ body {
 
 .card-image {
     width: 80%;  /* 图片宽度占 80% 屏幕 */
-    max-width: 600px;  /* 最大宽度 */
+    max-width: 800px;  /* 最大宽度 */
     height: auto;  /* 保持原始比例 */
     cursor: pointer;
     transition: transform 0.3s;
