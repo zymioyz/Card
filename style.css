@@ -60,3 +60,18 @@ body {
 .card-image:hover {
     transform: scale(1.05);  /* 鼠标悬停时放大 */
 }
+
+.card-image {
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+body, html {
+    overflow: hidden;  /* 禁止页面滚动 */
+    height: 100%;  /* 让页面铺满屏幕 */
+    touch-action: none;  /* 关闭默认手势（更流畅） */
+}

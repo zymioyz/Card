@@ -30,6 +30,20 @@ function handleTouchMove(event) {
     }
 }
 
+function handleTouchMove(event) {
+    let moveY = event.touches[0].clientY;
+    let diff = startY - moveY;
+
+    if (Math.abs(diff) > 50) { // 只有滑动超过 50px 才触发切换
+        event.preventDefault();  // 🔥 关键：阻止默认滚动！
+        if (diff > 0) {
+            nextPage(); // 向上滑，下一页
+        } else {
+            prevPage(); // 向下滑，上一页
+        }
+    }
+}
+
 // 📌 页面切换逻辑
 function nextPage() {
     lastPage = currentPage; // 记录上一次的页面
