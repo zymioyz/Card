@@ -49,16 +49,20 @@ body {
     left: 0;
 }
 
-.card-image {
-    width: 80%;  /* 图片宽度占 80% 屏幕 */
-    max-width: 800px;  /* 最大宽度 */
-    height: auto;  /* 保持原始比例 */
-    cursor: pointer;
-    transition: transform 0.3s;
+/* 仅在手机（屏幕宽度小于 768px）生效 */
+@media screen and (max-width: 768px) {
+    .card-image {
+        width: 100vw;  /* 宽度填满屏幕 */
+        height: 100vh; /* 高度填满屏幕 */
+        object-fit: cover; /* 保持图片比例，填充整个屏幕 */
+    }
 }
 
-.card-image:hover {
-    transform: scale(1.05);  /* 鼠标悬停时放大 */
+.card-image {
+    max-height: 100vh;  /* 让图片高度填满整个浏览器窗口 */
+    width: auto;        /* 保持原始宽高比 */
+    display: block;     /* 避免图片下面有额外间隙 */
+    margin: auto;       /* 居中显示 */
 }
 
 .card-image {
