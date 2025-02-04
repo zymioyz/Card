@@ -23,9 +23,9 @@ function handleTouchMove(event) {
     let moveY = event.touches[0].clientY;
     let diff = startY - moveY;
 
-    if (diff > 50) {
+    if (diff > 80) {
         nextPage(); // 向上滑，下一页
-    } else if (diff < -50) {
+    } else if (diff < -80) {
         prevPage(); // 向下滑，上一页
     }
 }
