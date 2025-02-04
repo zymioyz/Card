@@ -49,12 +49,13 @@ body {
     left: 0;
 }
 
-/* 仅在手机（屏幕宽度小于 768px）生效 */
+/* 仅在手机端（屏幕宽度小于 768px）生效 */
 @media screen and (max-width: 768px) {
     .card-image {
-        width: 100vw;  /* 宽度填满屏幕 */
-        height: 100vh; /* 高度填满屏幕 */
-        object-fit: cover; /* 保持图片比例，填充整个屏幕 */
+        width: 100vw;  /* 让图片宽度和手机屏幕宽度一致 */
+        height: auto;  /* 保持原始宽高比 */
+        display: block; /* 避免图片有额外间隙 */
+        margin: 0 auto; /* 居中显示 */
     }
 }
 
