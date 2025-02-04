@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交互式贺卡</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <div class="page" id="envelope">
+            <h1>📩 点击打开信封</h1>
+            <div class="envelope" onclick="openEnvelope()"></div>
+        </div>
+
+        <div class="page hidden" id="animation">
+            <h1>🎉 动画页面 🎉</h1>
+            <p>这里可以放入你的动画</p>
+        </div>
+
+        <div class="page hidden" id="message">
+            <h1>💌 祝福语 💌</h1>
+            <p>愿你天天开心！</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
