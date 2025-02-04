@@ -1,6 +1,19 @@
-body {
+/* 让 body 填满整个屏幕 */
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    display: flex; /* 使用 flexbox */
+    align-items: center; /* 让内容垂直居中 */
+    justify-content: center; /* 让内容水平居中 */
     background: url("images/background.png") no-repeat center center fixed; 
-    background-size: cover; 
+    background-size: cover;
+}
+
+body, html {
+    overflow: hidden;  /* 禁止页面滚动 */
+    touch-action: none;  /* 关闭默认手势（更流畅） */
 }
 
 .container {
@@ -78,20 +91,4 @@ body {
     to { opacity: 1; }
 }
 
-/* 让 body 填满整个屏幕 */
-body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    display: flex; /* 使用 flexbox */
-    align-items: center; /* 让内容垂直居中 */
-    justify-content: center; /* 让内容水平居中 */
-    background-color: #f8f8f8; /* 你可以换成你的背景颜色 */
-}
 
-body, html {
-    overflow: hidden;  /* 禁止页面滚动 */
-    height: 100%;  /* 让页面铺满屏幕 */
-    touch-action: none;  /* 关闭默认手势（更流畅） */
-}
