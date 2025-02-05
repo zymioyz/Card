@@ -61,22 +61,3 @@ function nextPage() {
         pages[currentPage].classList.remove("hidden");
     }
 }
-
-// 📌 处理滑动返回
-function prevPage() {
-    console.log(`当前页面: ${currentPage}, 之前的页面: ${previousPage}`); // 调试
-
-    if (currentPage === 1) { 
-        // 动画 → 信封页
-        previousPage = currentPage;
-        pages[currentPage].classList.add("hidden");
-        currentPage = 0;
-        pages[currentPage].classList.remove("hidden");
-    } else if (currentPage === 2) { 
-        // 祝福语 → 动画页
-        previousPage = currentPage;
-        pages[currentPage].classList.add("hidden");
-        currentPage = 1;
-        pages[currentPage].classList.remove("hidden");
-    }
-}
