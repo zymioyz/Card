@@ -76,6 +76,7 @@ body, html {
 
 .card-image {
     max-height: 100vh;  /* 让图片高度填满整个浏览器窗口 */
+    height:100%;  /* 让高度自动适应，保持原始比例 */
     width: auto;        /* 保持原始宽高比 */
     display: block;     /* 避免图片下面有额外间隙 */
     margin: auto;       /* 居中显示 */
