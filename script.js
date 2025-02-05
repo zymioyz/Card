@@ -2,33 +2,12 @@ let currentPage = 0;
 const pages = document.querySelectorAll(".page");
 let previousPage = null; // 记录上一次的页面
 
-// 🖱️ 电脑版：点击切换页面
+// 📌 监听全局点击事件，让所有设备都用点击切换页面
+
 document.addEventListener("click", function() {
-    if (window.innerWidth > 768) { // 仅限桌面端
-        nextPage();
-    }
+    nextPage();
 });
 
-// 📱 移动端：滑动切换页面
-document.addEventListener("touchstart", handleTouchStart, false);
-document.addEventListener("touchmove", handleTouchMove, false);
-
-let startY = 0;
-
-function handleTouchStart(event) {
-    startY = event.touches[0].clientY;
-}
-
-function handleTouchMove(event) {
-    let moveY = event.touches[0].clientY;
-    let diff = startY - moveY;
-
-    if (diff > 50) {
-        nextPage(); // 向上滑，下一页
-    } else if (diff < -50) {
-        prevPage(); // 向下滑，上一页
-    }
-}
 
 // 📌 页面切换逻辑
 function nextPage() {
