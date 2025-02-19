@@ -7,8 +7,6 @@ body, html {
     display: flex; /* 使用 flexbox */
     align-items: center; /* 让内容垂直居中 */
     justify-content: center; /* 让内容水平居中 */
-    background: url("images/background.png") no-repeat center center fixed; 
-    background-size: cover;
 }
 
 body, html {
