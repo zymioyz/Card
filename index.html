@@ -18,24 +18,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
 
     <!-- 设置 iOS 状态栏颜色 -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /> 
     <link rel="manifest" href="favicon/site.webmanifest" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <div class="page" id="envelope">
-        <img src="images/slow2.gif" alt="信封" class="card-image" onclick="openEnvelope()">
-    </div>
-
-    <div class="page hidden" id="animation">
-        <img src="images/animation.png" alt="动画" class="card-image">
-    </div>
-
-    <div class="page hidden" id="message">
-        <img src="images/message.png" alt="祝福语" class="card-image">
-    </div>
-
-    <script src="script.js"></script>
+<!-- 只保留一个容器 -->
+  <div class="page" id="envelope"></div>
+  <script src="script.js"></script>
 </body>
 </html>
