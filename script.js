@@ -32,26 +32,45 @@ document.addEventListener("DOMContentLoaded", function() {
       source.src = file.src;
       video.appendChild(source);
     
-      // 用 oncanplaythrough 事件判断视频是否加载完成
+      // 判断设备类型，桌面端使用 oncanplaythrough，移动端使用 onloadeddata
+      var isMobile = /Mobi|Android/i.test(navigator.userAgent);
+      var preloadEvent = isMobile ? "loadeddata" : "canplaythrough";
+    
       var promise = new Promise(function(resolve, reject) {
-        video.oncanplaythrough = function() {
-          resolve();
-        };
+        var resolved = false;
+        // 定义一个清理函数，移除事件监听和清除超时
+        function cleanup() {
+          video.removeEventListener(preloadEvent, onEvent);
+          clearTimeout(timeoutId);
+        }
+        function onEvent() {
+          if (!resolved) {
+            resolved = true;
+            cleanup();
+            resolve();
+          }
+        }
+        video.addEventListener(preloadEvent, onEvent);
         video.onerror = function(e) {
-          reject(e);
+          if (!resolved) {
+            resolved = true;
+            cleanup();
+            reject(e);
+          }
         };
+        // 设置超时，比如3秒后自动解决预加载
+        var timeoutId = setTimeout(function() {
+          if (!resolved) {
+            console.warn("预加载超时，自动解决视频预加载，step: ", step);
+            resolved = true;
+            cleanup();
+            resolve();
+          }
+        }, 3000);
       });
+      
       video.load();
       preloaded[step] = video;
-      preloadPromises.push(promise);
-    } else if (file.type === "image") {
-      var img = new Image();
-      var promise = new Promise(function(resolve, reject) {
-        img.onload = function() { resolve(); };
-        img.onerror = function(e) { reject(e); };
-      });
-      img.src = file.src;
-      preloaded[step] = img;
       preloadPromises.push(promise);
     }
   });
@@ -64,9 +83,10 @@ document.addEventListener("DOMContentLoaded", function() {
     console.error("媒体预加载错误：", err);
   });
 
-  var currentStep = 1;
+  var finished = false;
   // 切换步骤函数，根据不同步骤显示对应的媒体
   function startStep(step) {
+    if (finished) return;
     currentStep = step;
     container.innerHTML = "";
     if (mediaFiles[step].type === "video") {
@@ -87,9 +107,12 @@ document.addEventListener("DOMContentLoaded", function() {
         }
       };
       video.onended = function() {
+        // 仅处理当前视频的 onended，防止多次触发
+        video.onended = null;
         if (step === 2) {
           startStep(3);
         } else if (step === 4) {
+          finished = true;  // 设置最终状态
           startStep(5);
         }
       };
