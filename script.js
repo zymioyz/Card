@@ -1,5 +1,11 @@
 document.addEventListener("DOMContentLoaded", function() {
   var container = document.getElementById("envelope");
+  var loader = document.getElementById("loader");
+
+  // 缓存预加载好的媒体元素
+  var preloaded = {};
+  var preloadPromises = [];
+
   container.addEventListener("touchstart", function() {
     var video = preloaded[1]; // 假设从 step1 开始
     if (video && video.play) {
@@ -8,7 +14,6 @@ document.addEventListener("DOMContentLoaded", function() {
       });
     }
   }, { once: true });
-  var loader = document.getElementById("loader");
 
   // 定义每个步骤的媒体文件信息
   var mediaFiles = {
@@ -18,10 +23,6 @@ document.addEventListener("DOMContentLoaded", function() {
     4: { type: "video", src: "videos/step4.mp4", loop: false },
     5: { type: "image", src: "images/step5.png" }
   };
-
-  // 缓存预加载好的媒体元素
-  var preloaded = {};
-  var preloadPromises = [];
 
   // 遍历 mediaFiles，预加载每个文件
   Object.keys(mediaFiles).forEach(function(step) {
