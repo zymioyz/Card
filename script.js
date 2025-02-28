@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (file.type === "video") {
       var video = document.createElement("video");
       video.muted = true;
+      video.setAttribute("playsinline", "true");
       video.autoplay = false;
       video.playsInline = true;
       video.loop = file.loop;
@@ -30,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function() {
       source.type = "video/mp4";
       source.src = file.src;
       video.appendChild(source);
-
+    
       // 用 oncanplaythrough 事件判断视频是否加载完成
       var promise = new Promise(function(resolve, reject) {
         video.oncanplaythrough = function() {
