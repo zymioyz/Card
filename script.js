@@ -1,5 +1,13 @@
 document.addEventListener("DOMContentLoaded", function() {
   var container = document.getElementById("envelope");
+  container.addEventListener("touchstart", function() {
+    var video = preloaded[1];
+    if (video && video.play) {
+      video.play().catch(function(e) {
+        console.error("播放错误：", e);
+      });
+    }
+  }, { once: true });
   var loader = document.getElementById("loader");
 
   // 定义每个步骤的媒体文件信息
@@ -27,18 +35,19 @@ document.addEventListener("DOMContentLoaded", function() {
       video.loop = file.loop;
       video.style.width = "100%";
       video.style.height = "100%";
+      // 添加类名，确保应用 CSS 样式
+      video.className = "card-image";
+      
       var source = document.createElement("source");
       source.type = "video/mp4";
       source.src = file.src;
       video.appendChild(source);
     
-      // 判断设备类型，桌面端使用 oncanplaythrough，移动端使用 onloadeddata
       var isMobile = /Mobi|Android/i.test(navigator.userAgent);
       var preloadEvent = isMobile ? "loadeddata" : "canplaythrough";
     
       var promise = new Promise(function(resolve, reject) {
         var resolved = false;
-        // 定义一个清理函数，移除事件监听和清除超时
         function cleanup() {
           video.removeEventListener(preloadEvent, onEvent);
           clearTimeout(timeoutId);
@@ -47,6 +56,7 @@ document.addEventListener("DOMContentLoaded", function() {
           if (!resolved) {
             resolved = true;
             cleanup();
+            console.log("Step " + step + " 预加载完毕");
             resolve();
           }
         }
@@ -58,10 +68,9 @@ document.addEventListener("DOMContentLoaded", function() {
             reject(e);
           }
         };
-        // 设置超时，比如3秒后自动解决预加载
         var timeoutId = setTimeout(function() {
           if (!resolved) {
-            console.warn("预加载超时，自动解决视频预加载，step: ", step);
+            console.warn("预加载超时，自动解决视频预加载, step:", step);
             resolved = true;
             cleanup();
             resolve();
