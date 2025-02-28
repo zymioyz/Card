@@ -1,10 +1,10 @@
 document.addEventListener("DOMContentLoaded", function() {
   var container = document.getElementById("envelope");
   container.addEventListener("touchstart", function() {
-    var video = preloaded[1];
+    var video = preloaded[1]; // 假设从 step1 开始
     if (video && video.play) {
       video.play().catch(function(e) {
-        console.error("播放错误：", e);
+        console.error("触摸启动播放错误：", e);
       });
     }
   }, { once: true });
