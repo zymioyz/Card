@@ -96,16 +96,16 @@ body, html {
     z-index: 999;
 }
 
- #loader {
+  #loader {
     transition: opacity 0.5s ease;
   }
   .hide {
     opacity: 0;
   }
 
-   /* 根据需要调整图标的尺寸 */
-   #muteButton {
-    width: 50px; /* 根据需要调整大小 */
+  /* 根据需要调整图标的尺寸 */
+  #muteButton {
+    width: 40px;/* 根据需要调整大小 */
     height: auto; /* 保持视频原比例 */
     position: absolute;
     bottom: 5%;  /* 根据需要调整 */
