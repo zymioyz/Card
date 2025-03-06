@@ -1,71 +1,92 @@
 document.addEventListener("DOMContentLoaded", function() {
   var container = document.getElementById("envelope");
-  var loader = document.getElementById("loader");
-  var preloaded = {};
+  var loader = document.getElementById('loader');
+loader.addEventListener('transitionend', function() {
+  // 可选：增加一点额外延迟
+  setTimeout(function() {
+    document.getElementById('step1').style.display = 'block';
+  }, 100);
+});
 
-  // 设置容器样式，确保内部视频能重叠显示
+  // 全局变量，记录用户是否解除静音
+  var userHasUnmuted = false;
+
+  muteButton.addEventListener('click', function(event) {
+    event.stopPropagation();
+    // 切换解除静音状态
+    userHasUnmuted = !userHasUnmuted;
+    
+    // 更新按钮图标
+    if (userHasUnmuted) {
+      muteButton.src = "images/unmute.png";
+    } else {
+      muteButton.src = "images/mute.png";
+    }
+    
+    // 更新所有视频的静音状态
+    if (activeVideo) activeVideo.muted = !userHasUnmuted;
+    if (inactiveVideo) inactiveVideo.muted = !userHasUnmuted;
+    
+    // 仅更新额外音频的静音状态，不启动播放
+    if (extraAudio) {
+      extraAudio.muted = !userHasUnmuted;
+      // 如果当前处于step3阶段，且额外音频尚未播放，解除静音时主动启动播放
+    if (userHasUnmuted && extraAudio.paused && currentStep === 3) {
+      extraAudio.play().catch(function(e) {
+        console.error("播放额外音频出错：", e);
+      });
+    }
+    }
+  });
+
+    var extraAudio = new Audio("audios/aftercard.mp3");
+    extraAudio.preload = "auto"; // 提示浏览器自动加载音频
+    extraAudio.loop = true;
+    extraAudio.volume = 0.5;
+    // 根据用户是否解除静音设置 muted 状态
+    extraAudio.muted = !userHasUnmuted;
+    extraAudio.load();         // 显式调用加载 
+    extraAudio.addEventListener('canplaythrough', function() {
+    console.log("音频预加载完成，可以顺畅播放！");
+    });
+
+    function fadeInAudio(audioElement, duration, targetVolume = 0.5) {
+      // 初始化音量为 0
+      audioElement.volume = 0;
+      let stepTime = 50; // 每50毫秒调整一次
+      let steps = duration / stepTime;
+      let volumeIncrement = targetVolume / steps;
+      
+      let fadeTimer = setInterval(function() {
+        if (audioElement.volume < targetVolume) {
+          audioElement.volume = Math.min(targetVolume, audioElement.volume + volumeIncrement);
+        } else {
+          clearInterval(fadeTimer);
+        }
+      }, stepTime);
+    }
+
+
+  // 确保 loader 初始显示（假设你的 HTML 中 loader 已设置为加载 loading.mp4）
+  loader.style.display = "block";
+
+  // 设置容器样式
   container.style.position = "relative";
   container.style.width = "100%";
   container.style.height = "100%";
 
-  // 定义媒体文件信息
+  // 定义媒体文件，只使用 step1、step2 和 step3
   var mediaFiles = {
     1: { type: "video", src: "videos/step1.mp4", loop: true },
     2: { type: "video", src: "videos/step2.mp4", loop: false },
-    3: { type: "video", src: "videos/step3.mp4", loop: true },
-    4: { type: "video", src: "videos/step4.mp4", loop: false },
-    5: { type: "image", src: "images/step5.png" }
+    3: { type: "video", src: "videos/step3.mp4", loop: false }
   };
 
-  // 预加载所有媒体，确保播放时不会因加载问题而出现卡顿
-  var preloadPromises = [];
-  Object.keys(mediaFiles).forEach(function(step) {
-    var file = mediaFiles[step];
-    if (file.type === "video") {
-      var video = document.createElement("video");
-      video.muted = true;
-      video.setAttribute("playsinline", "true");
-      video.autoplay = false;
-      video.playsInline = true;
-      video.loop = file.loop;
-      // 不添加到页面，仅用于预加载
-      var source = document.createElement("source");
-      source.type = "video/mp4";
-      source.src = file.src;
-      video.appendChild(source);
-  
-    } else if (file.type === "image") {
-      var img = new Image();
-      var promise = new Promise(function(resolve, reject) {
-        img.onload = function() { 
-          // 存入 preloaded 对象
-          preloaded[step] = img;
-          resolve(); 
-        };
-        img.onerror = reject;
-      });
-      img.src = file.src;
-      preloadPromises.push(promise);
-    }
-  });
-
-  // 等待所有媒体预加载完成
-  Promise.all(preloadPromises).then(function() {
-    loader.style.display = "none";  // 隐藏加载动画
-    startPlayback();                 // 开始播放
-  }).catch(function(err) {
-    console.error("媒体预加载错误：", err);
-  });
-
-  // -------------------------------
-  // 以下为重叠视频播放部分（无缝衔接逻辑）
-  // -------------------------------
-
-  // 创建视频元素的函数，保证属性和样式一致
+  // 创建 video 元素，保证属性和样式一致
   function createVideoElement() {
     var video = document.createElement("video");
     video.muted = true;
-    video.autoplay = false; // 由 JS 控制播放
+    video.autoplay = false;
     video.playsInline = true;
     video.setAttribute("playsinline", "true");
     video.style.position = "absolute";
@@ -79,61 +100,54 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   var activeVideo, inactiveVideo;
-  var currentStep = 1;
+  var currentStep = 1; // 1: step1, 2: step2, 3: step3
+  var step2LoopActive = false; // 标记 step2 循环部分是否已开始
 
-  function preloadNext(step) {
-    return new Promise(function(resolve, reject) {
-      if (mediaFiles[step].type === "video") {
-        loadVideo(inactiveVideo, step).then(resolve).catch(reject);
-      } else if (mediaFiles[step].type === "image") {
-        // 对于图片，可以直接检查 preloaded 数组中是否已加载
-        if (preloaded[step]) {
-          resolve();
-        } else {
-          reject("图片未预加载");
-        }
+  // 定义 step2 分段循环的起始和结束时间（单位：秒）
+  const loopStartTime = 4;
+  const loopEndTime = 12;
+  function handleSegmentLoop() {
+    console.log("timeupdate: currentTime =", activeVideo.currentTime);
+    if (activeVideo.currentTime >= loopEndTime) {
+      console.log("达到 loopEndTime，重置到", loopStartTime);
+      activeVideo.currentTime = loopStartTime;
+      activeVideo.play();
+      if (!step2LoopActive) {
+        step2LoopActive = true;
+        console.log("Step2 循环部分已开始");
       }
-    });
+    }
   }
 
-  // 开始播放函数：创建两个视频元素，并加载 step1 到 activeVideo，同时预加载 step2 到 inactiveVideo
+  // 初始化播放：创建两个 video 元素，加载 step1 到 activeVideo，并预加载 step2
   function startPlayback() {
     activeVideo = createVideoElement();
     inactiveVideo = createVideoElement();
     activeVideo.style.display = "block";
     inactiveVideo.style.display = "none";
-    container.innerHTML = ""; // 清空容器
+    container.innerHTML = "";
     container.appendChild(activeVideo);
     container.appendChild(inactiveVideo);
-    
-    // 加载 step1 到 activeVideo
+
     loadVideo(activeVideo, 1).then(function() {
+      // 隐藏 loader 后开始播放 step1
+      loader.style.display = "none";
       playActiveVideo();
-      // 同时预加载 step2 到 inactiveVideo
       preloadNext(2).then(function() {
         console.log("Step2预加载完成");
+      }).catch(function(e) {
+        console.error("预加载step2错误:", e);
       });
+    }).catch(function(e) {
+      console.error("加载step1错误:", e);
     });
 
-    // 点击事件：在 step1 和 step3 时响应点击（分别切换到 step2 和 step4）
-    activeVideo.addEventListener("click", function() {
-      if (currentStep === 1) {
-        currentStep = 2;
-        swapVideos();
-        playActiveVideo();
-      } else if (currentStep === 3) {
-        currentStep = 4;
-        swapVideos();
-        playActiveVideo();
-      }
-    });
-
-    // 为两个视频都绑定 ended 事件（确保只对当前 activeVideo 生效）
-    activeVideo.addEventListener("ended", handleEnded);
-    inactiveVideo.addEventListener("ended", handleEnded);
+    activeVideo.addEventListener("click", handleClick);
   }
 
-  // loadVideo：将指定 step 的视频加载到给定的视频元素中（利用媒体文件的 src），并等待 onloadeddata 事件
+  startPlayback();
+
+  // 将指定 step 的视频加载到给定 video 元素中
   function loadVideo(videoElement, step) {
     return new Promise(function(resolve, reject) {
       while (videoElement.firstChild) {
@@ -141,24 +155,15 @@ document.addEventListener("DOMContentLoaded", function() {
       }
       var source = document.createElement("source");
       source.type = "video/mp4";
-      if (step === 1) {
-        videoElement.loop = true;
-        source.src = mediaFiles[1].src;
-      } else if (step === 2) {
-        videoElement.loop = false;
-        source.src = mediaFiles[2].src;
-      } else if (step === 3) {
-        videoElement.loop = true;
-        source.src = mediaFiles[3].src;
-      } else if (step === 4) {
-        videoElement.loop = false;
-        source.src = mediaFiles[4].src;
-      }
+      source.src = mediaFiles[step].src;
+      // 只有 step1 是循环播放，其余不设置 loop（step2 分段循环由代码控制）
+      videoElement.loop = (step === 1) ? true : false;
       videoElement.appendChild(source);
       videoElement.load();
       videoElement.onloadeddata = function() {
         videoElement.currentTime = 0;
         videoElement.pause();
+        console.log("加载完成 step" + step);
         resolve();
       };
       videoElement.onerror = function(e) {
@@ -167,95 +172,83 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
+  // 预加载下一个视频到 inactiveVideo（用于无缝切换）
+  function preloadNext(step) {
+    return loadVideo(inactiveVideo, step);
+  }
+
+  // 播放 activeVideo 并打印日志
   function playActiveVideo() {
-    activeVideo.play().catch(function(e) {
+    activeVideo.play().then(function() {
+      console.log("开始播放，当前时间：", activeVideo.currentTime);
+    }).catch(function(e) {
       console.error("播放错误:", e);
     });
   }
-  
+
+  // 无缝切换：交换 activeVideo 与 inactiveVideo 的显示状态，并延时绑定点击事件
   function swapVideos() {
-    // 这里采用简单的交换逻辑：隐藏 activeVideo，显示 inactiveVideo，再交换引用
+    activeVideo.pause();
     activeVideo.style.display = "none";
     inactiveVideo.style.display = "block";
+    activeVideo.removeEventListener("click", handleClick);
     var temp = activeVideo;
     activeVideo = inactiveVideo;
     inactiveVideo = temp;
+    setTimeout(function() {
+      activeVideo.addEventListener("click", handleClick);
+    }, 50);
   }
 
-  // swapVideos：交换 activeVideo 与 inactiveVideo 的显示状态
-  function handleEnded() {
-    if (this !== activeVideo) return; // 仅处理当前 activeVideo 的 ended 事件
-    if (currentStep === 2) {
-      // 使用预设的 background3 作为过渡背景
-    preloadNext(3).then(function() {
-      console.log("Step3预加载完成")
-      var bgImg = document.createElement("img");
-      bgImg.src = "images/background3.png"; // 背景图片，用于 step2 到 step3 的过渡
-      bgImg.style.position = "absolute";
-      bgImg.style.top = "0";
-      bgImg.style.left = "0";
-      bgImg.style.width = "100%";
-      bgImg.style.height = "100%";
-      bgImg.style.objectFit = "contain"; // 或者 cover，根据你需要的效果选择
-      bgImg.style.zIndex = 10; // 确保背景图片在视频之上
-      // 同时预加载 step3 到 inactiveVideo 备用
-
-      // 立即进行切换到 step3
-      setTimeout(function() {
-        currentStep = 3;
+  // 点击事件处理：
+  // - step1 点击后切换到 step2，同时为 step2 添加分段循环监听器
+  // - step2 点击时，只有当分段循环已启动（step2LoopActive 为 true）才切换到 step3
+  function handleClick(e) {
+    e.stopImmediatePropagation();
+    if (currentStep === 1) {
+      currentStep = 2;
+      step2LoopActive = false; // 重置标记
+      preloadNext(2).then(function() {
+        swapVideos();
+        activeVideo.currentTime = 0;
+        playActiveVideo();
+        // 为 step2 添加分段循环监听器
+        activeVideo.addEventListener("timeupdate", handleSegmentLoop);
+        // 同时预加载 step3 备用
+        preloadNext(3).then(function() {
+          console.log("Step3预加载完成");
+        }).catch(function(e) {
+          console.error("预加载step3错误:", e);
+        });
+      }).catch(function(e) {
+        console.error("预加载step2错误:", e);
+      });
+    } else if (currentStep === 2) {
+      // 如果还未进入循环且播放时间小于8秒，则不允许切换
+      if (!step2LoopActive && activeVideo.currentTime < 8) {
+        console.log("等待 step2 播放8秒后再点击");
+        return;
+      }
+      activeVideo.removeEventListener("timeupdate", handleSegmentLoop);
+      currentStep = 3;
+      preloadNext(3).then(function() {
         swapVideos();
         playActiveVideo();
-      
-        // 同时预加载 step4 到 inactiveVideo 备用
-         preloadNext(4).then(function() {
-          console.log("Step4预加载完成");
-         });
-        // 切换完成后延时移除背景图片
+        // 在 step3 播放开始后绑定 ended 事件来触发额外音频
+      activeVideo.addEventListener("ended", function() {
         setTimeout(function() {
-          if (container.contains(bgImg)) {
-            container.removeChild(bgImg);
+          extraAudio.muted = !userHasUnmuted;
+          if (userHasUnmuted && extraAudio.paused) {
+            extraAudio.play().then(function() {
+              // 启动后淡入，持续2秒（2000毫秒）
+              fadeInAudio(extraAudio, 2000);
+            }).catch(function(e) {
+              console.error("播放额外音频出错：", e);
+            });
           }
-        }, 100);
-      }, 500);
+        }, 1000);
       });
-
-    } else if (currentStep === 4) {
-      preloadNext(5).then(function() { 
-        console.log("Step5预加载完成"); 
-      });
-      // 使用预设的 background5 作为过渡背景
-      var bgImg = document.createElement("img");
-      bgImg.src = "images/background5.png"; // 背景图片，用于 step4 到 step5 的过渡
-      bgImg.className = "card-image";
-      bgImg.style.position = "absolute";
-      bgImg.style.top = "0";
-      bgImg.style.left = "0";
-      bgImg.style.width = "100%";
-      bgImg.style.height = "100%";
-      bgImg.style.objectFit = "contain"; // 或者 cover，根据你需要的效果选择
-      bgImg.style.zIndex = 10; // 确保背景图片在视频之上
-      
-      // 切换到最终的贺卡图片
-      setTimeout(function() {
-      currentStep = 5;
-      // 为避免破坏视频元素，建议不要清空整个容器，而是将最终图片覆盖到上面
-      // 这里我们直接移除两个视频播放器并添加最终图片
-      container.removeChild(activeVideo);
-      container.removeChild(inactiveVideo);
-      
-      var finalImg = new Image();
-      finalImg.src = mediaFiles[5].src;
-      finalImg.alt = "最终贺卡";
-      finalImg.className = "card-image";
-      container.appendChild(finalImg);
-      
-      // 移除背景图片（延时移除，保证过渡平滑）
-      setTimeout(function() {
-        if (container.contains(bgImg)) {
-          container.removeChild(bgImg);
-        }
-      }, 100);
-    }, 500)
-    }
+    });
   }
+}
 });
