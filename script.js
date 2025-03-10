@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function() {
-  var container = document.getElementById("envelope");
+  var container = document.getElementById("card");
   var loader = document.getElementById('loader');
+
 loader.addEventListener('transitionend', function() {
   // 可选：增加一点额外延迟
   setTimeout(function() {
@@ -67,10 +68,6 @@ loader.addEventListener('transitionend', function() {
     }, stepTime);
   }
   
-  // 设置容器样式，确保内部视频能重叠显示
-  container.style.position = "relative";
-  container.style.width = "100%";
-  container.style.height = "100%";
 
   // 定义媒体文件信息
   var mediaFiles = {
@@ -120,12 +117,6 @@ loader.addEventListener('transitionend', function() {
     video.autoplay = false; // 由 JS 控制播放
     video.playsInline = true;
     video.setAttribute("playsinline", "true");
-    video.style.position = "absolute";
-    video.style.top = "0";
-    video.style.left = "0";
-    video.style.width = "100%";
-    video.style.height = "100%";
-    video.style.objectFit = "contain";
     video.className = "card-image";
     return video;
   }
@@ -166,6 +157,7 @@ loader.addEventListener('transitionend', function() {
         console.log("Step2预加载完成");
       });
     });
+
 
     // 点击事件：在 step1 和 step3 时响应点击（分别切换到 step2 和 step4）
     activeVideo.addEventListener("click", function() {
