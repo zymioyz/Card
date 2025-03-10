@@ -117,7 +117,7 @@ loader.addEventListener('transitionend', function() {
     video.autoplay = false; // 由 JS 控制播放
     video.playsInline = true;
     video.setAttribute("playsinline", "true");
-    video.className = "card-image";
+    video.className = "card";
     return video;
   }
 
