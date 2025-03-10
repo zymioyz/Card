@@ -70,11 +70,6 @@ loader.addEventListener('transitionend', function() {
   // 确保 loader 初始显示（假设你的 HTML 中 loader 已设置为加载 loading.mp4）
   loader.style.display = "block";
 
-  // 设置容器样式
-  container.style.position = "relative";
-  container.style.width = "100%";
-  container.style.height = "100%";
-
   // 定义媒体文件，只使用 step1、step2 和 step3
   var mediaFiles = {
     1: { type: "video", src: "videos/step1.mp4", loop: true },
@@ -89,7 +84,7 @@ loader.addEventListener('transitionend', function() {
     video.autoplay = false;
     video.playsInline = true;
     video.setAttribute("playsinline", "true");
-    video.className = "card-image";
+    video.className = "card";
     return video;
   }
 
